@@ -1,0 +1,40 @@
+{
+  "name": "gestor-proplus",
+  "version": "2.0.0",
+  "description": "Sistema de Gestão para Estética Automotiva - Clean Architecture PWA",
+  "type": "module",
+  "author": "R.M. Estética Automotiva",
+  "license": "MIT",
+  "keywords": ["gestão", "automotiva", "pwa", "offline-first", "supabase"],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write src/**/*.{js,jsx,ts,tsx,css,md}",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dexie": "^3.2.4",
+    "zustand": "^4.4.7",
+    "chart.js": "^4.4.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.6.0",
+    "date-fns": "^3.0.6"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-pwa": "^0.17.4",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "vitest": "^1.0.0",
+    "@vitest/ui": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
