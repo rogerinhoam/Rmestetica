@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor PRO+ - R.M. Estética Automotiva</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .app {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .auth-container {
+            display: none;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+        }
+        
+        .auth-card {
+            background: #2c3e50;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem;
+        }
+        
+        .auth-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #ecf0f1;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ecf0f1;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            background: #34495e;
+            color: #ecf0f1;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .success {
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: #1a1a1a;
+            overflow-y: auto;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .nav-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: #34495e;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #ecf0f1;
+        }
+        
+        .card {
+            background: #2c3e50;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #2c3e50;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #bdc3c7;
+            font-size: 0.9rem;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .table th {
+            background: #34495e;
+            font-weight: 600;
+            color: #ecf0f1;
+        }
+        
+        .table td {
+            color: #bdc3c7;
+        }
+        
+        .table tr:hover {
+            background: #34495e;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #2c3e50;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-title {
+            font-size: 1.2rem;
+            color: #ecf0f1;
+        }
+        
+        .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #bdc3c7;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #ecf0f1;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        
+        .btn-secondary {
+            background: #7f8c8d;
+        }
+        
+        .btn-secondary:hover {
+            background: #6c7b7d;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #219a52;
+        }
+        
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-orcamento {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .status-aprovado {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .status-finalizado {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .status-cancelado {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .search-box {
+            padding: 0.5rem;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            background: #34495e;
+            color: #ecf0f1;
+            width: 300px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                height: 100vh;
+                z-index: 999;
+                transition: left 0.3s;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: #bdc3c7;">Carregando Gestor PRO+...</p>
+    </div>
+
+    <!-- Auth Container -->
+    <div id="authContainer" class="auth-container">
+        <div class="auth-card">
+            <h2 class="auth-title">Gestor PRO+</h2>
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn" id="authBtn">Entrar</button>
+                <div id="authMessage" class="error"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app">
+        <div class="app-layout">
+            <nav class="sidebar">
+                <h2 style="color: #ecf0f1; margin-bottom: 2rem;">Gestor PRO+</h2>
+                <ul class="nav-menu">
+                    <li><a href="#" data-page="dashboard" class="nav-link active">Dashboard</a></li>
+                    <li><a href="#" data-page="clientes" class="nav-link">Clientes</a></li>
+                    <li><a href="#" data-page="servicos" class="nav-link">Serviços</a></li>
+                    <li><a href="#" data-page="orcamentos" class="nav-link">Orçamentos</a></li>
+                </ul>
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-danger" id="logoutBtn">Sair</button>
+                </div>
+            </nav>
+
+            <main class="main-content">
+                <!-- Dashboard Page -->
+                <div id="dashboard" class="page active">
+                    <h1 class="page-title">Dashboard</h1>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalClientes">0</div>
+                            <div class="stat-label">Total de Clientes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalServicos">0</div>
+                            <div class="stat-label">Total de Serviços</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalOrcamentos">0</div>
+                            <div class="stat-label">Total de Orçamentos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="faturamentoMes">R$ 0</div>
+                            <div class="stat-label">Faturamento do Mês</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clientes Page -->
+                <div id="clientes" class="page">
+                    <h1 class="page-title">Clientes</h1>
+                    <div class="toolbar">
+                        <input type="text" class="search-box" placeholder="Buscar clientes..." id="searchClientes">
+                        <button class="btn btn-primary" id="addClienteBtn">Novo Cliente</button>
+                    </div>
+                    <div class="card">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Telefone</th>
+                                    <th>Veículo</th>
+                                    <th>Placa</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientesTable">
+                                <!-- Clientes serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Serviços Page -->
+                <div id="servicos" class="page">
+                    <h1 class="page-title">Serviços</h1>
+                    <div class="toolbar">
+                        <input type="text" class="search-box" placeholder="Buscar serviços..." id="searchServicos">
+                        <button class="btn btn-primary" id="addServicoBtn">Novo Serviço</button>
+                    </div>
+                    <div class="card">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Descrição</th>
+                                    <th>Valor</th>
+                                    <th>Categoria</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="servicosTable">
+                                <!-- Serviços serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Orçamentos Page -->
+                <div id="orcamentos" class="page">
+                    <h1 class="page-title">Orçamentos</h1>
+                    <div class="toolbar">
+                        <input type="text" class="search-box" placeholder="Buscar orçamentos..." id="searchOrcamentos">
+                        <button class="btn btn-primary" id="addOrcamentoBtn">Novo Orçamento</button>
+                    </div>
+                    <div class="card">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Status</th>
+                                    <th>Valor Total</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orcamentosTable">
+                                <!-- Orçamentos serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Cliente -->
+    <div id="clienteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Cliente</h3>
+                <button class="close" id="closeClienteModal">&times;</button>
+            </div>
+            <form id="clienteForm">
+                <div class="form-group">
+                    <label for="clienteNome">Nome</label>
+                    <input type="text" id="clienteNome" name="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="clienteTelefone">Telefone</label>
+                    <input type="text" id="clienteTelefone" name="telefone">
+                </div>
+                <div class="form-group">
+                    <label for="clienteCarro">Veículo</label>
+                    <input type="text" id="clienteCarro" name="carro">
+                </div>
+                <div class="form-group">
+                    <label for="clientePlaca">Placa</label>
+                    <input type="text" id="clientePlaca" name="placa">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelClienteBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Serviço -->
+    <div id="servicoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Serviço</h3>
+                <button class="close" id="closeServicoModal">&times;</button>
+            </div>
+            <form id="servicoForm">
+                <div class="form-group">
+                    <label for="servicoDescricao">Descrição</label>
+                    <input type="text" id="servicoDescricao" name="descricao" required>
+                </div>
+                <div class="form-group">
+                    <label for="servicoValor">Valor (R$)</label>
+                    <input type="number" id="servicoValor" name="valor" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="servicoCategoria">Categoria</label>
+                    <select id="servicoCategoria" name="categoria">
+                        <option value="Lavagem">Lavagem</option>
+                        <option value="Enceramento">Enceramento</option>
+                        <option value="Polimento">Polimento</option>
+                        <option value="Detalhamento">Detalhamento</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelServicoBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Orçamento -->
+    <div id="orcamentoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Orçamento</h3>
+                <button class="close" id="closeOrcamentoModal">&times;</button>
+            </div>
+            <form id="orcamentoForm">
+                <div class="form-group">
+                    <label for="orcamentoCliente">Cliente</label>
+                    <select id="orcamentoCliente" name="cliente_id" required>
+                        <option value="">Selecione um cliente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="orcamentoServico">Serviço</label>
+                    <select id="orcamentoServico">
+                        <option value="">Selecione um serviço</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="orcamentoQuantidade">Quantidade</label>
+                    <input type="number" id="orcamentoQuantidade" value="1" min="1">
+                </div>
+                <button type="button" class="btn btn-secondary" id="addServicoToOrcamento">Adicionar Serviço</button>
+                
+                <div id="servicosOrcamento" style="margin: 1rem 0;">
+                    <h4>Serviços do Orçamento:</h4>
+                    <div id="servicosOrcamentoList"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orcamentoDesconto">Desconto (R$)</label>
+                    <input type="number" id="orcamentoDesconto" name="desconto" step="0.01" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label>Valor Total: <span id="valorTotal">R$ 0,00</span></label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelOrcamentoBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
